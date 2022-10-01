@@ -2,31 +2,37 @@
 # Installing And Configuring Argo CD #
 ######################################
 
-echo ✔️ Updating argo brew packages
+echo "✔️   Updating argo brew packages"
 brew tap argoproj/tap
-brew install argocd
+brew install argocd jq
 
-echo ✔️ Creating argocd namespace
+MINIKUBE_DRIVER=$(minikube profile list --output='json' | jq '.valid[0].Config.Driver')
+if [ "$MINIKUBE_DRIVER" != '"virtualbox"' ]; then
+  echo "💢  Exiting due to Minikube's driver mismatch: The existing 'minikube' driver was not created with 'virtualbox' driver, minikube start --vm=true --driver=virtualbox"
+  exit 1
+fi
+
+echo "✔️   Creating argocd namespace"
 kubectl create namespace argocd
 
 kubectl apply -n argocd -f \
   https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-echo "⏱ Wait for argocd pods to contain the status condition of type 'Ready', this can take a while"
+echo "⏱  Wait for argocd pods to contain the status condition of type 'Ready', this can take a while"
 kubectl wait --for=condition=Ready pods --all --namespace argocd
 
-echo ✔️ argocd pods are ready
-echo ✔️ Making sure argocd is available through port: 9001
+echo "✔️   argocd pods are ready"
+echo "✔️   Making sure argocd is available through port: 9001"
 
 # Perform kubectl port-forward in background
 kubectl port-forward --namespace argocd service/argocd-server 9001:443 &
 
-echo ℹ️ Trying to get argocd-initial-admin-secret
+echo "ℹ️   Trying to get argocd-initial-admin-secret"
 export PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
 
-echo ℹ️ If you want to make use of the console:
-echo 🔑 argoCD username: admin
-echo 🔑 argoCD password: $PASSWORD
+echo "ℹ️   If you want to make use of the console:"
+echo "🔑  argoCD username: admin"
+echo "🔑  argoCD password: $PASSWORD"
 
 argocd login localhost:9001 --insecure --username admin --password $PASSWORD
 
@@ -36,7 +42,7 @@ kubectl --namespace argocd get pods
 # Configuring ingress to argocd.spacebooking.com #
 ######################################
 
-echo ℹ️  Enabling Minikube\'s ingress addon
+echo "ℹ️   Enabling Minikube\'s ingress addon"
 minikube addons enable ingress
 
 MINIKUBE_IP=$(minikube ip)
@@ -45,10 +51,10 @@ HOSTS_ENTRY="$MINIKUBE_IP $ARGO_INGRESS"
 
 if grep -Fq "$MINIKUBE_IP" /etc/hosts > /dev/null
 then
-    echo 🔑 Updating $HOSTS_ENTRY to /etc/hosts
+    echo "🔑  Updating $HOSTS_ENTRY to /etc/hosts"
     sudo sed -i '' "s/^$MINIKUBE_IP.*/$HOSTS_ENTRY/" /etc/hosts
 else
-    echo 🔑 Adding $HOSTS_ENTRY to /etc/hosts
+    echo "🔑  Adding $HOSTS_ENTRY to /etc/hosts"
     echo "$HOSTS_ENTRY" | sudo tee -a /etc/hosts
 fi
 
