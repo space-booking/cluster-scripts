@@ -2,7 +2,7 @@
 # Installing And Configuring Argo CD #
 ######################################
 
-echo "✔️   Updating argo brew packages"
+echo "✅  Updating argo brew packages"
 brew tap argoproj/tap
 brew install argocd jq
 
@@ -12,7 +12,7 @@ if [ "$MINIKUBE_DRIVER" != '"virtualbox"' ]; then
   exit 1
 fi
 
-echo "✔️   Creating argocd namespace"
+echo "✅  Creating argocd namespace"
 kubectl create namespace argocd
 
 kubectl apply -n argocd -f \
@@ -21,8 +21,8 @@ kubectl apply -n argocd -f \
 echo "⏱  Wait for argocd pods to contain the status condition of type 'Ready', this can take a while"
 kubectl wait --for=condition=Ready pods --all --namespace argocd
 
-echo "✔️   argocd pods are ready"
-echo "✔️   Making sure argocd is available through port: 9001"
+echo "✅  argocd pods are ready"
+echo "✅  Making sure argocd is available through port: 9001"
 
 # Perform kubectl port-forward in background
 kubectl port-forward --namespace argocd service/argocd-server 9001:443 &
@@ -49,10 +49,10 @@ MINIKUBE_IP=$(minikube ip)
 ARGO_INGRESS="argocd.spacebooking.com"
 HOSTS_ENTRY="$MINIKUBE_IP $ARGO_INGRESS"
 
-if grep -Fq "$MINIKUBE_IP" /etc/hosts > /dev/null
+if grep -Fq "$ARGO_INGRESS" /etc/hosts > /dev/null
 then
     echo "🔑  Updating $HOSTS_ENTRY to /etc/hosts"
-    sudo sed -i '' "s/^$MINIKUBE_IP.*/$HOSTS_ENTRY/" /etc/hosts
+    sudo sed -i '' "s/.*$ARGO_INGRESS.*/$HOSTS_ENTRY/" /etc/hosts
 else
     echo "🔑  Adding $HOSTS_ENTRY to /etc/hosts"
     echo "$HOSTS_ENTRY" | sudo tee -a /etc/hosts
