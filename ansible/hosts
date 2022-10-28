@@ -1,0 +1,9 @@
+[all:vars]
+ansible_user=pi
+ansible_ssh_pass=raspberry
+
+[picluster]
+192.168.2.60
+192.168.2.61
+192.168.2.62
+192.168.2.63
