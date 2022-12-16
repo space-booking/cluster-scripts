@@ -1,6 +1,6 @@
 ---
 - name: Shutdown entire cluster
-  hosts: picluster
+  hosts: cluster
   gather_facts: no
   tasks:
     - name: 'Shutdown RPi'

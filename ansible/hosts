@@ -2,8 +2,29 @@
 ansible_user=pi
 ansible_ssh_pass=raspberry
 
-[picluster]
+[worker1]
 192.168.2.60
-192.168.2.61
-192.168.2.62
+
+[worker2]
+192.168.2.61 var_disk=sda var_uuid=3e7a967a-5b33-4a79-9eff-3057108c6237
+
+[worker3]
+192.168.2.62 var_disk=sda var_uuid=2da56711-764f-4385-82f8-67eded2f4ba1
+
+[control]
 192.168.2.63
+
+[storage_workers:children]
+worker2
+worker3
+
+[workers:children]
+worker1
+worker2
+worker3
+
+[cluster:children]
+control
+worker1
+worker2
+worker3
