@@ -1,0 +1,17 @@
+---
+ - name: Playbook to install Longhorn software requirements
+   hosts: cluster
+   become: true
+   tasks: 
+    - name: Ansible apt install nfs-common
+      apt:
+        name: nfs-common
+        state: present
+    - name: Ansible apt install open-iscsi
+      apt:
+        name: open-iscsi
+        state: present
+    - name: Ansible apt install util-linux
+      apt:
+        name: util-linux
+        state: present
